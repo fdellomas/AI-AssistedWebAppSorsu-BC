@@ -1,6 +1,6 @@
 <template>
     <div class="w-full min-h-screen pt-20">
-        <section class="w-full h-96 p-10 overflow-y-auto space-y-5" ref="chatContainer" @scroll="onScroll">
+        <section class="w-full h-96 p-10 overflow-y-auto scroll-smooth space-y-5" ref="chatContainer" @scroll="onScroll">
             <div v-for="(log, index) in logs" :key="index" class="w-full p-3 flex flex-col gap-5">
                 <div class="w-80 md:w-3/5 self-end rounded-lg bg-blue-400/20 border border-blue-400 p-5">
                     <p class="text-sm"><span class="font-bold">You:</span> <span>{{ log.question }}</span></p>
@@ -44,9 +44,15 @@
                     question: this.question
                 })
                 .then(response => {
+                    this.question = ''
                     let temp = this.logs
                     temp.push(response.data?.answer)
                     this.logs = temp
+                    this.$nextTick(() => {
+                        setTimeout(() => {
+                            this.scrollToBottom()
+                        }, 600)
+                    })
                 })
                 .catch(error => {
                     console.log(error)
@@ -86,7 +92,7 @@
                     setTimeout(() => {
                         const scrollHeightAfter = container.scrollHeight
                         container.scrollTop = scrollHeightAfter - scrollHeightBefore
-                    }, 400)
+                    }, 600)
                 })
             },
             onScroll() {

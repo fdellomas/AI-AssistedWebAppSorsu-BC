@@ -80,54 +80,11 @@ class QueryController extends Controller
             ]);
         }
 
-        $new_log = QueryLog::with('items')->where('id', $query_log->id)->first();
+        $new_log = QueryLog::with(['items', 'items.answer'])->where('id', $query_log->id)->first();
 
         return response()->json([
             'answer' => $new_log,
         ]);
-        // $samples = [
-        //     'register',
-        //     'admission',
-        //     'courses',
-        //     'founder',
-        //     'university',
-        // ];
-        
-        // $labels = [
-        //     'registration proceedure', 
-        //     'admission data', 
-        //     'course list', 
-        //     'The founder is XYZ', 
-        //     'This is ABC University'
-        // ];
-        
-        // // Vectorize and transform the samples using TF-IDF
-        // $vectorizer = new TokenCountVectorizer(new WhitespaceTokenizer());
-        // $vectorizer->fit($samples);
-        // $vectorizer->transform($samples);
-
-        // $transformer = new TfIdfTransformer($samples);
-        // $transformer->transform($samples);
-
-        // // Process the input query
-        // $inputQuery = strtolower($request->input('query'));
-        // $inputSample = [$inputQuery];
-        // $vectorizer->transform($inputSample);
-        // $transformer->transform($inputSample);
-
-        // // Compute similarity with each sample
-        // $maxSimilarity = -1;
-        // $bestAnswer = '';
-
-        // foreach ($samples as $index => $sample) {
-        //     $similarity = $this->cosineSimilarity($inputSample[0], $sample);
-        //     if ($similarity > $maxSimilarity) {
-        //         $maxSimilarity = $similarity;
-        //         $bestAnswer = $labels[$index];
-        //     }
-        // }
-
-        // return response()->json(['answer' => $bestAnswer]);
     }
 
     protected function cosineSimilarity(array $vec1, array $vec2): float
