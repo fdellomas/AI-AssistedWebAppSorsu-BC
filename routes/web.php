@@ -29,6 +29,7 @@ Route::prefix('user')->controller(UserController::class)->group(function() {
     Route::post('/register', 'signup');
     Route::get('/logout', 'logout');
     Route::post('/update', 'update');
+    Route::post('/update-account', 'updateAccount');
 });
 
 Route::prefix('answer')->controller(AnswerSheetController::class)->group(function() {

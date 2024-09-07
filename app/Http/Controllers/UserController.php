@@ -54,7 +54,32 @@ class UserController extends Controller
     {
         $validated = $request->validated();
 
-        $user = User::update($validated);
+        $user = User::find($validated['user_id']);
+        $user->first_name = $validated['first_name'];
+        $user->middle_name = $validated['middle_name'];
+        $user->last_name = $validated['last_name'];
+        $user->extension = $validated['extension'];
+        $user->save();
+
+        return response()->json([
+            'user' => $user
+        ]);
+    }
+
+    public function updateAccount(Request $request)
+    {
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'email' => 'required|email:rfc,dns',
+            'password' => 'nullable',
+        ]);
+
+        $user = User::find($validated['user_id']);
+        $user->email = $validated['email'];
+        if ($validated['password']) {
+            $user->password = Hash::make($validated['password']);
+        }
+        $user->save();
 
         return response()->json([
             'user' => $user

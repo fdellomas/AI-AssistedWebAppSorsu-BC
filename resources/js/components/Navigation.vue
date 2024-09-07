@@ -1,6 +1,9 @@
 <template>
-    <div class="fixed w-full md:w-1/6 h-full top-0 left-0 p-5 pt-20 md:pt-5 bg-gray-100">
-        <h1 class="font-bold mb-5">AI-Assisted Web App</h1>
+    <div class="fixed w-full md:w-1/6 h-full top-0 left-0 p-5 pt-20 md:pt-5 bg-gray-100 z-10">
+        <div class="w-full flex justify-center items-center">
+            <Logo imgClass="w-20 h-20" />
+        </div>
+        <h1 class="font-bold text-center mb-5">AI-Assisted Web App</h1>
         <nav class="flex flex-col gap-3">
             <router-link to="/" class="w-full p-2 rounded" :class="{'bg-slate-400 text-white' : this.isLinkActive('/')}">
                 <v-icon name="fa-home" />
@@ -27,11 +30,15 @@
 
 <script>
     import { useAuthStore } from '../stores/auth'
+    import Logo from './Logo.vue'
     export default {
         data() {
             return {
                 user_role: null,
             }
+        },
+        components: {
+            Logo
         },
         methods: {
             isLinkActive(link) {
