@@ -28,7 +28,7 @@
                                     <button class="p-1 text-xs rounded bg-blue-400 hover:bg-blue-600 text-white">
                                         <v-icon name="fa-pencil-alt" />
                                     </button>
-                                    <button class="p-1 text-xs rounded bg-red-400 hover:bg-red-600 text-white">
+                                    <button @click="confirmDelete(answer.id)" class="p-1 text-xs rounded bg-red-400 hover:bg-red-600 text-white">
                                         <v-icon name="fa-trash" />
                                     </button>
                                 </div>
@@ -43,6 +43,9 @@
 
 <script>
     import axios from 'axios';
+    import alertify from 'alertifyjs';
+    import 'alertifyjs/build/css/alertify.css';
+    import 'alertifyjs/build/css/themes/default.css';
 
     export default {
         data() {
@@ -63,7 +66,31 @@
             getDate(date) {
                 const formatted = new Date(date)
                 return formatted.toLocaleDateString('en-US')
-            }
+            },
+            confirmDelete(id) {
+                alertify.confirm(
+                    'Delete Confirmation',
+                    'Are you sure you want to delete?',
+                    () => {
+                        this.deleteItem(id)
+                    },
+                    function() {
+                        alertify.error('CANCELED')
+                    }
+                )
+            },
+            deleteItem(id) {
+                axios.post('/answer/delete', { answer_id: id })
+                .then(response => {
+                    this.answers = response.data?.answers
+                    alertify.success('SUCCESS')
+                })
+                .catch(error => {
+                    console.log(error)
+                    alertify.error('ERROR')
+                    alertify.alert(error?.response?.data?.message)
+                })
+            },
         },
         mounted() {
             this.getAnswers()

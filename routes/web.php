@@ -35,6 +35,7 @@ Route::prefix('user')->controller(UserController::class)->group(function() {
 Route::prefix('answer')->controller(AnswerSheetController::class)->group(function() {
     Route::post('/', 'index');
     Route::post('/store', 'store');
+    Route::post('/delete', 'delete');
 });
 
 Route::prefix('queries')->controller(QueryLogController::class)->group(function() {

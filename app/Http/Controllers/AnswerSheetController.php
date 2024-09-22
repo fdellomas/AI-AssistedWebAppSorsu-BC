@@ -26,4 +26,19 @@ class AnswerSheetController extends Controller
 
         return response()->json(['message' => 'Failed'], 500);
     }
+
+    public function delete(Request $request)
+    {
+        $request->validate([
+            'answer_id' => 'required|exists:answer_sheets,id'
+        ]);
+
+        $answer = AnswerSheet::find($request->answer_id);
+        $answer->delete();
+        $answers = AnswerSheet::all();
+
+        return response()->json([
+            'answers' => $answers
+        ]);
+    }
 }

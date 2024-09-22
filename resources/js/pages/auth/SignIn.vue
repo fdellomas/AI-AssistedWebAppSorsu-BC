@@ -40,6 +40,9 @@
     import axios from 'axios';
     import Logo from '../../components/Logo.vue';
     import { useAuthStore } from '../../stores/auth';
+    import alertify from 'alertifyjs';
+    import 'alertifyjs/build/css/alertify.css';
+    import 'alertifyjs/build/css/themes/default.css';
 
     export default {
         data() {
@@ -65,6 +68,8 @@
                 })
                 .catch(error => {
                     console.log(error.response)
+                    alertify.error('ERROR')
+                    alertify.alert(error.response?.data?.message)
                 })
             }
         }
