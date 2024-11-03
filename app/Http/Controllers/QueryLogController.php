@@ -13,8 +13,7 @@ class QueryLogController extends Controller
             'user_id' => 'required|exists:users,id'
         ]);
 
-        $logs = QueryLog::with(['items', 'items.answer'])
-            ->where('user_id', $request->user_id)
+        $logs = QueryLog::where('user_id', $request->user_id)
             ->orderByDesc('created_at')
             ->take(5)
             ->get()
@@ -33,8 +32,7 @@ class QueryLogController extends Controller
             'last_query_id' => 'required|exists:query_logs,id'
         ]);
 
-        $old_logs = QueryLog::with(['items', 'items.answer'])
-            ->where('id', '<', $request->last_query_id)
+        $old_logs = QueryLog::where('id', '<', $request->last_query_id)
             ->orderByDesc('created_at')
             ->take(5)
             ->get()

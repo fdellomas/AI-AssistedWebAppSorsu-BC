@@ -16,4 +16,33 @@ class PostController extends Controller
             'post' => $posts
         ]);
     }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'message' => 'required',
+            'title' => 'required',
+            'images' => 'nullable|array',
+            'images.*' => 'nullable|file',
+        ]);
+
+        $post = Post::create($validated);
+        $imgPaths = [];
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+                $path = 'posts/' . $filename;
+                $image->storeAs('/public/posts', $filename);
+                $imgPaths[] = $path;
+            }
+            $post->update([
+                'attachments' => $imgPaths
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'OK',
+            'post' => $post
+        ], 200);
+    }
 }

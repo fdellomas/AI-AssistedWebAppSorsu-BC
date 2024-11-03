@@ -10,116 +10,111 @@ use Phpml\Math\Distance\Cosine;
 use App\Models\AnswerSheet;
 use App\Models\QueryLog;
 use App\Models\QueryLogItem;
+use Phpml\Classification\KNearestNeighbors;
+use GuzzleHttp\Client;
 
 class QueryController extends Controller
 {
     public function query(Request $request)
     {
-        $sheets = AnswerSheet::all();
+        $validated = $request->validate([
+            'question' => 'required',
+            'user_id' => 'required|exists:users,id',
+        ]);
+
+        function cosineSimilarity($vec1, $vec2) {
+            $intersection = array_intersect_key($vec1, $vec2);
+            $dotProduct = 0;
+            $normA = 0;
+            $normB = 0;
+        
+            foreach ($intersection as $key => $value) {
+                $dotProduct += $vec1[$key] * $vec2[$key];
+            }
+        
+            foreach ($vec1 as $key => $value) {
+                $normA += $value ** 2;
+            }
+        
+            foreach ($vec2 as $key => $value) {
+                $normB += $value ** 2;
+            }
+        
+            return $dotProduct / (sqrt($normA) * sqrt($normB));
+        }
+        
+        function textToVector($text) {
+            $words = explode(' ', strtolower($text));
+            $vector = [];
+            foreach ($words as $word) {
+                $vector[$word] = ($vector[$word] ?? 0) + 1;
+            }
+            return $vector;
+        }
+
         $samples = [];
-        $labels = [];
+        $sheets = AnswerSheet::all();
         foreach ($sheets as $key => $value) {
-            // $question_array = $value->possible_questions;
-            $label = $value->category;
+            $label = $value->answer;
             foreach ($value->possible_questions as $question) {
-                $samples[] = $question;
-                $labels[] = $label;
+                $sample = textToVector($question);
+                $samples[] = ['label' => $label, 'vector' => $sample];
             }
         }
-        $vectorizer = new TokenCountVectorizer(new WhitespaceTokenizer());
-        $vectorizer->fit($samples);
-        $vectorizer->transform($samples);
-
-        $transformer = new TfIdfTransformer($samples);
-        $transformer->transform($samples);
-
-        // Process the input query
-        $inputQuery = strtolower($request->input('question'));
-
-        // Split the query into sub-questions
-        $subQueries = preg_split('/[?.!;]+/', $inputQuery, -1, PREG_SPLIT_NO_EMPTY);
-
-        $answers = [];
-
-        foreach ($subQueries as $subQuery) {
-            $inputSample = [trim($subQuery)];
-            $vectorizer->transform($inputSample);
-            $transformer->transform($inputSample);
-
-            // Compute similarity with each sample
-            $maxSimilarity = -1;
-            $bestAnswer = '';
-
-            foreach ($samples as $index => $sample) {
-                $similarity = $this->cosineSimilarity($inputSample[0], $sample);
-                if ($similarity > $maxSimilarity) {
-                    $maxSimilarity = $similarity;
-                    $bestAnswer = $labels[$index];
-                }
-            }
-
-            if ($bestAnswer) {
-                $answers[] = $bestAnswer;
+        // $samples = [
+        //     'course' => textToVector('what are the courses'),
+        //     'admission' => textToVector('admission')
+        // ];
+        $queryVector = textToVector($validated['question']);
+        
+        $threshold = 0.1; // Adjust this based on testing
+        $predictedLabel = 'Unrelated';
+        $highestSimilarity = 0;
+        
+        foreach ($samples as $sample) {
+            $similarity = cosineSimilarity($queryVector, $sample['vector']);
+            if ($similarity > $highestSimilarity && $similarity > $threshold) {
+                $highestSimilarity = $similarity;
+                $predictedLabel = $sample['label'];
             }
         }
 
-        // Combine all answers into a single response
-        $finalAnswer = implode(' ', $answers);
+        $response = $predictedLabel;
 
-        $queried_answer = AnswerSheet::where('category', $finalAnswer)->get();
-
-        $query_log = QueryLog::create([
-            'user_id' => $request->user_id,
-            'question' => $request->question,
-        ]);
-
-        foreach ($queried_answer as $key => $value) {
-            QueryLogItem::create([
-                'query_log_id' => $query_log->id,
-                'answer_sheet_id' => $value['id'],
+        if ($predictedLabel != 'Unrelated') {
+            // $openai = new Client(env('OPENAI_API_KEY'));
+            $client = new Client();
+            $prompt = "Question: " . $validated['question'] . "\nReference: " . $predictedLabel;
+            $body = $client->post('https://api.openai.com/v1/completions', [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . env('OPENAI_API_KEY'),
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => [
+                    'model' => 'gpt-3.5-turbo',
+                    'prompt' => $prompt,
+                    'max_tokens' => 150,
+                    'temperature' => 0.7,
+                ],
             ]);
+            $response = json_decode($body->getBody(), true);
+            return response()->json([
+                'message' => 'OK',
+                'answer' => $response
+            ], 200);
         }
 
-        $new_log = QueryLog::with(['items', 'items.answer'])->where('id', $query_log->id)->first();
-
-        return response()->json([
-            'answer' => $new_log,
+        $log = QueryLog::create([
+            'user_id' => $validated['user_id'],
+            'question' => $validated['question'],
+            'answer' => "I'm sorry, but I couldn't find relevant information in the knowledge base for that question. Could you try rephrasing or asking a different question?"
         ]);
+        
+        return response()->json([
+            'message' => $predictedLabel !== 'Unrelated' ? 'OK' : 'Unrelated',
+            'answer' => $log
+        ], 200);
     }
 
-    protected function cosineSimilarity(array $vec1, array $vec2): float
-    {
-        // $dotProduct = 0.0;
-        // $magnitude1 = 0.0;
-        // $magnitude2 = 0.0;
-    
-        // foreach ($vec1 as $i => $value1) {
-        //     $value2 = $vec2[$i];
-        //     $dotProduct += $value1 * $value2;
-        //     $magnitude1 += $value1 ** 2;
-        //     $magnitude2 += $value2 ** 2;
-        // }
-    
-        // if ($magnitude1 == 0 || $magnitude2 == 0) {
-        //     return 0.0; // Avoid division by zero
-        // }
-    
-        // return $dotProduct / (sqrt($magnitude1) * sqrt($magnitude2));
-        $dotProduct = 0.0;
-        $magnitude1 = 0.0;
-        $magnitude2 = 0.0;
 
-        foreach ($vec1 as $i => $value1) {
-            $value2 = $vec2[$i];
-            $dotProduct += $value1 * $value2;
-            $magnitude1 += $value1 ** 2;
-            $magnitude2 += $value2 ** 2;
-        }
-
-        if ($magnitude1 == 0 || $magnitude2 == 0) {
-            return 0.0; // Avoid division by zero
-        }
-
-        return $dotProduct / (sqrt($magnitude1) * sqrt($magnitude2));
-    }
 }

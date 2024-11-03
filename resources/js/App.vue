@@ -12,6 +12,7 @@
 </template>
 
 <script>
+    import axios from 'axios';
     import MainLayout from './layouts/MainLayout.vue';
 
     export default {
@@ -23,6 +24,15 @@
             showLayout() {
                 return this.$route.meta.Layout
             }
+        },
+        mounted() {
+            axios.get('/sanctum/csrf-cookie')
+            .then(response => {
+                console.log(response)
+            })
+            .catch(error => {
+                console.log(error)
+            })
         },
     }
 </script>

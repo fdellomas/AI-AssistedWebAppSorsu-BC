@@ -3,18 +3,18 @@
         <section class="w-full h-96 p-10 overflow-y-auto scroll-smooth space-y-5" ref="chatContainer" @scroll="onScroll">
             <div v-for="(log, index) in logs" :key="index" class="w-full p-3 flex flex-col gap-5">
                 <div class="w-80 md:w-3/5 self-end rounded-lg bg-blue-400/20 border border-blue-400 p-5">
-                    <p class="text-sm"><span class="font-bold">You:</span> <span>{{ log.question }}</span></p>
+                    <p class="text-sm"><span class="font-bold">You:</span> <span>{{ log?.question }}</span></p>
                 </div>
                 <div class="w-80 md:w-3/5 self-start rounded-lg bg-gray-400/20 border border-gray-400 p-5">
-                    <p v-for="(item, idx) in log.items" :key="idx" class="text-sm">{{ item?.answer?.answer }}</p>
+                    <p class="text-sm">{{ log.answer.visibleAnswer }}</p>
                 </div>
             </div>
         </section>
         <section class="w-full sticky bottom-0">
             <form @submit.prevent="submitQuestion">
                 <div class="flex gap-2 items-center p-10">
-                    <input type="text" name="question" id="question" v-model="this.question" class="w-full p-2 rounded text-sm outline-none border border-slate-900" />
-                    <button class="w-1/6 p-2 rounded text-white text-sm bg-blue-400 hover:bg-blue-600" type="submit">
+                    <input type="text" name="question" id="question" v-model="question" class="w-full p-2 rounded text-sm outline-none border border-slate-900" />
+                    <button class="w-1/6 p-2 rounded text-white text-sm bg-blue-400 hover:bg-blue-600" type="submit" :disabled="disableBtn">
                         <v-icon name="fa-paper-plane" />
                     </button>
                 </div>
@@ -31,12 +31,48 @@
         data() {
             return {
                 question: '',
-                logs: [
-                    
-                ],
+                disableBtn: false,
+                logs: [],
             }
         },
         methods: {
+            typeText(fullText) {
+                let index = 0;
+                const currentLogIndex = this.logs.length - 1; 
+
+                const interval = setInterval(() => {
+                    if (index < fullText.length) {
+                        this.logs[currentLogIndex].answer.visibleAnswer += fullText[index];
+                        index++;
+                    } else {
+                        clearInterval(interval);
+                    }
+                }, 100);
+            },
+            showAnswerEffect(qlg) {
+                const newLog = {
+                    question: qlg.question,
+                    answer: {
+                        full: qlg.answer,
+                        visibleAnswer: '',
+                    }
+                }
+                this.logs = [...this.logs, newLog]
+                this.typeText(qlg.answer)
+            },
+            logTransfer(queries) {
+                let newLogs = []
+                queries.forEach(element => {
+                    newLogs.push({
+                        question: element.question,
+                        answer: {
+                            full: element.answer,
+                            visibleAnswer: element.answer
+                        }
+                    }) 
+                });
+                this.logs = newLogs
+            },
             submitQuestion() {
                 const store = useAuthStore()
                 axios.post('/query', {
@@ -44,10 +80,10 @@
                     question: this.question
                 })
                 .then(response => {
+                    console.log(response)
+                    const newLog = response.data?.answer
                     this.question = ''
-                    let temp = this.logs
-                    temp.push(response.data?.answer)
-                    this.logs = temp
+                    this.showAnswerEffect(newLog)
                     this.$nextTick(() => {
                         setTimeout(() => {
                             this.scrollToBottom()
@@ -62,7 +98,8 @@
                 const store = useAuthStore()
                 axios.post('/queries', { user_id: store.user?.id })
                 .then(response => {
-                    this.logs = response.data?.query_log
+                    const qlg = response.data?.query_log
+                    this.logTransfer(qlg)
                 })
                 .catch(error => {
                     console.log(error)

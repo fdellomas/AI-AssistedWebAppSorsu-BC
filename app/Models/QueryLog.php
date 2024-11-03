@@ -10,7 +10,7 @@ class QueryLog extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id', 'answer_sheet_id', 'question'
+        'user_id', 'answer_sheet_id', 'question', 'answer'
     ];
 
     public function items()

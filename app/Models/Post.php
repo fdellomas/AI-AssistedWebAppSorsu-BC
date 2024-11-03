@@ -15,6 +15,10 @@ class Post extends Model
         'attachments',
     ];
 
+    protected $casts = [
+        'attachments' => 'array'
+    ];
+
     public function comments()
     {
         return $this->hasMany(PostComment::class, 'post_id', 'id');

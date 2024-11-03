@@ -5,6 +5,8 @@ use App\Http\Controllers\QueryController;
 use App\Http\Controllers\QueryLogController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AnswerSheetController;
+use App\Http\Controllers\KnowledgeBaseController;
+use App\Http\Controllers\PostController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -41,4 +43,16 @@ Route::prefix('answer')->controller(AnswerSheetController::class)->group(functio
 Route::prefix('queries')->controller(QueryLogController::class)->group(function() {
     Route::post('/', 'index');
     Route::post('/old', 'oldQueries');
+});
+
+Route::prefix('knowledge-base')->controller(KnowledgeBaseController::class)->group(function() {
+    Route::post('/', 'index');
+    Route::post('/store', 'store');
+    Route::post('/delete', 'delete');
+    Route::post('/test', 'test');
+});
+
+Route::prefix('post')->controller(PostController::class)->group(function() {
+    Route::post('/store', 'store');
+    Route::post('/', 'index');
 });
