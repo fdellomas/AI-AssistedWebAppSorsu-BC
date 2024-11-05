@@ -51,6 +51,7 @@
             },
             showAnswerEffect(qlg) {
                 const newLog = {
+                    id: qlg.id,
                     question: qlg.question,
                     answer: {
                         full: qlg.answer,
@@ -64,6 +65,7 @@
                 let newLogs = []
                 queries.forEach(element => {
                     newLogs.push({
+                        id: element.id,
                         question: element.question,
                         answer: {
                             full: element.answer,
@@ -110,7 +112,6 @@
                 container.scrollTop = container.scrollHeight
             },
             loadOlderQueries() {
-                console.log('loaded')
                 const container = this.$refs.chatContainer
                 const scrollHeightBefore = container.scrollHeight
                 const store = useAuthStore()
@@ -120,7 +121,15 @@
                 })
                 .then(response => {
                     let temp = response.data?.query_log
-                    this.logs = [...temp, ...this.logs]
+                    const newLog = {
+                        id: temp.id,
+                        question: temp.question,
+                        answer: {
+                            full: temp.answer,
+                            visibleAnswer: temp.answer,
+                        }
+                    }
+                    this.logs = [...newLog, ...this.logs]
                 })
                 .catch(error => {
                     console.log(error)

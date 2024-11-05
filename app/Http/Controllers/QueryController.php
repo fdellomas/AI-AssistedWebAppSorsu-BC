@@ -10,8 +10,11 @@ use Phpml\Math\Distance\Cosine;
 use App\Models\AnswerSheet;
 use App\Models\QueryLog;
 use App\Models\QueryLogItem;
+use App\Models\User;
 use Phpml\Classification\KNearestNeighbors;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
+use Illuminate\Support\Facades\Log;
 
 class QueryController extends Controller
 {
@@ -21,6 +24,17 @@ class QueryController extends Controller
             'question' => 'required',
             'user_id' => 'required|exists:users,id',
         ]);
+
+        if (User::where('id', $validated['user_id'])->where('question_limit', '>=', 5)->exists()) {
+            $newLog = QueryLog::create([
+                'user_id' => $validated['user_id'],
+                'question' => $validated['question'],
+                'answer' => 'You have reached the limit of 5 questions. Please try again some time after further system updates.'
+            ]);
+            return response()->json([
+
+            ], 200);
+        }
 
         function cosineSimilarity($vec1, $vec2) {
             $intersection = array_intersect_key($vec1, $vec2);
@@ -85,23 +99,61 @@ class QueryController extends Controller
             // $openai = new Client(env('OPENAI_API_KEY'));
             $client = new Client();
             $prompt = "Question: " . $validated['question'] . "\nReference: " . $predictedLabel;
-            $body = $client->post('https://api.openai.com/v1/completions', [
-                'headers' => [
-                    'Authorization' => 'Bearer ' . env('OPENAI_API_KEY'),
-                    'Content-Type' => 'application/json',
-                ],
-                'json' => [
-                    'model' => 'gpt-3.5-turbo',
-                    'prompt' => $prompt,
-                    'max_tokens' => 150,
-                    'temperature' => 0.7,
-                ],
-            ]);
-            $response = json_decode($body->getBody(), true);
-            return response()->json([
-                'message' => 'OK',
-                'answer' => $response
-            ], 200);
+            try {
+                // $body = $client->post('https://api.openai.com/v1/chat/completions', [
+                //     'headers' => [
+                //         'Authorization' => 'Bearer ' . env('OPENAI_API_KEY'),
+                //         'Content-Type' => 'application/json',
+                //     ],
+                //     'json' => [
+                //         'model' => 'gpt-3.5-turbo',
+                //         'prompt' => $prompt,
+                //         'max_tokens' => 500,
+                //         'temperature' => 0.7,
+                //     ],
+                // ]);
+                $body = $client->post('https://api.openai.com/v1/chat/completions', [
+                    'headers' => [
+                        'Authorization' => 'Bearer ' . env('OPENAI_API_KEY'),
+                        'Content-Type' => 'application/json',
+                    ],
+                    'json' => [
+                        'model' => 'gpt-3.5-turbo',
+                        'messages' => [
+                            [
+                                'role' => 'system',
+                                'content' => 'You are a helpful assistant.'
+                            ],
+                            [
+                                'role' => 'user',
+                                'content' => $prompt
+                            ]
+                        ],
+                        'max_tokens' => 150,
+                        'temperature' => 0.7,
+                    ],
+                ]);
+                $response = json_decode($body->getBody(), true);
+                $answer = $response['choices'][0]['message']['content'];
+                $newLog = QueryLog::create([
+                    'user_id' => $validated['user_id'],
+                    'question' => $validated['question'],
+                    'answer' => $answer
+                ]);
+                return response()->json([
+                    'message' => 'OK',
+                    'answer' => $newLog
+                ], 200);
+            } catch (ClientException $e) {
+                if ($e->getCode() === 429) {
+                    Log::warning('API rate limit exceeded: ' . $e->getMessage());
+                    return response()->json([
+                        'error' => 'The system is temporarily busy. Please try again later.'
+                    ], 429);
+                } else {
+                    throw $e;
+                }
+            }
         }
 
         $log = QueryLog::create([
