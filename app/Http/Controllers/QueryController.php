@@ -25,6 +25,8 @@ class QueryController extends Controller
             'user_id' => 'required|exists:users,id',
         ]);
 
+        $user = User::find($validated['user_id']);
+
         if (User::where('id', $validated['user_id'])->where('question_limit', '>=', 5)->exists()) {
             $newLog = QueryLog::create([
                 'user_id' => $validated['user_id'],
@@ -75,13 +77,9 @@ class QueryController extends Controller
                 $samples[] = ['label' => $label, 'vector' => $sample];
             }
         }
-        // $samples = [
-        //     'course' => textToVector('what are the courses'),
-        //     'admission' => textToVector('admission')
-        // ];
         $queryVector = textToVector($validated['question']);
         
-        $threshold = 0.1; // Adjust this based on testing
+        $threshold = 0.1;
         $predictedLabel = 'Unrelated';
         $highestSimilarity = 0;
         
@@ -96,22 +94,9 @@ class QueryController extends Controller
         $response = $predictedLabel;
 
         if ($predictedLabel != 'Unrelated') {
-            // $openai = new Client(env('OPENAI_API_KEY'));
             $client = new Client();
             $prompt = "Question: " . $validated['question'] . "\nReference: " . $predictedLabel;
             try {
-                // $body = $client->post('https://api.openai.com/v1/chat/completions', [
-                //     'headers' => [
-                //         'Authorization' => 'Bearer ' . env('OPENAI_API_KEY'),
-                //         'Content-Type' => 'application/json',
-                //     ],
-                //     'json' => [
-                //         'model' => 'gpt-3.5-turbo',
-                //         'prompt' => $prompt,
-                //         'max_tokens' => 500,
-                //         'temperature' => 0.7,
-                //     ],
-                // ]);
                 $body = $client->post('https://api.openai.com/v1/chat/completions', [
                     'headers' => [
                         'Authorization' => 'Bearer ' . env('OPENAI_API_KEY'),
@@ -139,6 +124,11 @@ class QueryController extends Controller
                     'user_id' => $validated['user_id'],
                     'question' => $validated['question'],
                     'answer' => $answer
+                ]);
+                $question_limit = $user->question_limit ?? 0;
+                $question_limit++;
+                $user->update([
+                    'question_limit' => $question_limit
                 ]);
                 return response()->json([
                     'message' => 'OK',
