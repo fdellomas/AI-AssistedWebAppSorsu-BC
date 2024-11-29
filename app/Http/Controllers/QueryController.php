@@ -27,15 +27,15 @@ class QueryController extends Controller
 
         $user = User::find($validated['user_id']);
 
-        if (User::where('id', $validated['user_id'])->where('question_limit', '>=', 5)->exists()) {
+        if (User::where('id', $validated['user_id'])->where('question_limit', '>=', 10)->exists()) {
             $newLog = QueryLog::create([
                 'user_id' => $validated['user_id'],
                 'question' => $validated['question'],
-                'answer' => 'You have reached the limit of 5 questions. Please try again some time after further system updates.'
+                'answer' => 'You have reached the limit of 10 questions. Please try again some time after further system updates.'
             ]);
             return response()->json([
 
-            ], 200);
+            ], 500);
         }
 
         function cosineSimilarity($vec1, $vec2) {

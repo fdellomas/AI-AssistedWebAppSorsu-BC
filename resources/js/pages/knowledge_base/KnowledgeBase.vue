@@ -1,6 +1,6 @@
 <template>
     <div class="w-full min-h-screen p-10 space-y-5">
-        <!-- <section class="w-full p-5 rounded-lg shadow-xl border border-gray-400 flex justify-between items-center" v-if="notice">
+        <section class="w-full p-5 rounded-lg shadow-xl border border-gray-400 flex justify-between items-center" v-if="notice">
             <p class="text-xs">
                 <span class="text-amber-400 font-bold">Please note:</span>
                 Knowledge Base file formatting should use Heading styles as it will be used to programmatically segment the file into sections.
@@ -10,11 +10,13 @@
             </button>
         </section>
         <section class="w-full p-10 rounded-lg shadow-xl border border-gray-400">
-            <header class="mb-5 flex items-center justify-between">
-                <h1 class="text-2xl font-bold">Knowledge Base</h1>
-                <label for="file-upload" class="p-2 text-sm bg-blue-400 hover:bg-blue-600 text-white font-bold rounded cursor-pointer">Upload</label>
-                <input @change="handleUpload" type="file" name="file-upload" id="file-upload" class="hidden">
-            </header>
+            <form enctype="multipart/form-data">
+                <header class="mb-5 flex items-center justify-between">
+                    <h1 class="text-2xl font-bold">Knowledge Base</h1>
+                    <label for="file-upload" class="p-2 text-sm bg-blue-400 hover:bg-blue-600 text-white font-bold rounded cursor-pointer">Upload</label>
+                    <input @change="handleUpload" type="file" name="file-upload" id="file-upload" class="hidden">
+                </header>
+            </form>
             <div class="relative h-80 2xl:h-96 overflow-y-auto">
                 <table class="table-auto w-full">
                     <thead class="sticky top-0 bg-gray-400 text-white">
@@ -37,35 +39,38 @@
                     </tbody>
                 </table>
             </div>
-        </section> -->
-        <section class="w-full p-10 rounded-lg shadow-xl border border-gray-400">
+        </section>
+        <!-- <section class="w-full p-10 rounded-lg shadow-xl border border-gray-400">
             <header class="mb-5 flex items-center justify-between">
                 <h1 class="text-2xl font-bold">Knowledge Base</h1>
-                <router-link class="p-2 text-sm bg-blue-400 hover:bg-blue-600 text-white font-bold rounded" to="/knowledge-base/create">Add new</router-link>
+                <div class="flex flex-col md:flex-row justify-center items-center gap-2">
+                    <router-link class="p-2 text-sm bg-rose-400 hover:bg-rose-600 text-white font-bold rounded" to="/knowledge-base/archive">Archive</router-link>
+                    <router-link class="p-2 text-sm bg-blue-400 hover:bg-blue-600 text-white font-bold rounded" to="/knowledge-base/create">Add new</router-link>
+                </div>
             </header>
             <div class="relative h-80 2xl:h-96 overflow-y-auto">
                 <table class="table-fixed w-full text-center">
                     <thead class="sticky top-0 bg-gray-400 text-white">
                         <tr>
-                            <th>Category</th>
-                            <th>Sub Category</th>
-                            <th>Date Added</th>
+                            <th>Category</th> -->
+                            <!-- <th>Sub Category</th> -->
+                            <!-- <th>Date Added</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-for="(answer, index) in this.answers" :key="index">
-                            <td class="p-2 border-b border-gray-400 font-bold">{{ answer.category }}</td>
-                            <td class="p-2 border-b border-gray-400 text-indigo-600">{{ answer.sub_category }}</td>
-                            <td class="p-2 border-b border-gray-400 text-blue-400">{{ getDate(answer.created_at) }}</td>
+                            <td class="p-2 border-b border-gray-400 font-bold">{{ answer.category }}</td> -->
+                            <!-- <td class="p-2 border-b border-gray-400 text-indigo-600">{{ answer.sub_category }}</td> -->
+                            <!-- <td class="p-2 border-b border-gray-400 text-blue-400">{{ getDate(answer.created_at) }}</td>
                             <td class="p-2 border-b border-gray-400">
                                 <div class="w-full flex flex-wrap justify-center items-center gap-2">
-                                    <button class="p-1 text-xs rounded bg-green-400 hover:bg-green-600 text-white">
+                                    <router-link :to="`/knowledge-base/view/${answer.id}`" class="p-1 text-xs rounded bg-green-400 hover:bg-green-600 text-white">
                                         <v-icon name="fa-eye" />
-                                    </button>
-                                    <button class="p-1 text-xs rounded bg-blue-400 hover:bg-blue-600 text-white">
+                                    </router-link>
+                                    <router-link :to="`/knowledge-base/edit/${answer.id}`" class="p-1 text-xs rounded bg-blue-400 hover:bg-blue-600 text-white">
                                         <v-icon name="fa-pencil-alt" />
-                                    </button>
+                                    </router-link>
                                     <button @click="confirmDelete(answer.id)" class="p-1 text-xs rounded bg-red-400 hover:bg-red-600 text-white">
                                         <v-icon name="fa-trash" />
                                     </button>
@@ -75,7 +80,7 @@
                     </tbody>
                 </table>
             </div>
-        </section>
+        </section> -->
     </div>
 </template>
 
@@ -94,23 +99,40 @@
             }
         },
         methods: {
+            // handleUpload(event) {
+            //     alertify.confirm(
+            //         'Upload Confirmation',
+            //         'Continue upload?',
+            //         () => {
+            //             const file = event.target.files[0]
+            //             this.uploadFile(file)
+            //         },
+            //         () => {
+            //             alertify.error('Canceled')
+            //         }
+            //     )
+            // },
             handleUpload(event) {
-                alertify.confirm(
-                    'Upload Confirmation',
-                    'Continue upload?',
-                    () => {
-                        const file = event.target.files[0]
-                        this.uploadFile(file)
-                    },
-                    () => {
-                        alertify.error('Canceled')
-                    }
-                )
+                const fileses = event.target.files; // Get selected files
+                if (fileses.length > 0) {
+                    // Example: Upload files via an API
+                    const formData = new FormData();
+                    Array.from(fileses).forEach(file => formData.append('file[]', file));
+
+                    // Make an API request (Axios example)
+                    axios.post('/api/knowledge-base/store', { file: fileses })
+                    .then(response => {
+                        console.log('Upload successful:', response.data);
+                    })
+                    .catch(error => {
+                        console.error('Upload failed:', error);
+                    });
+                }
             },
-            uploadFile(file) {
-                const formData = new FormData()
-                formData.append('file', file)
-                axios.post('/knowledge-base/store', formData)
+            async uploadFile(file) {
+                // const formData = new FormData()
+                // formData.append('file', file)
+                await axios.post('/api/knowledge-base/store', { file: file })
                 .then(response => {
                     alertify.success('SUCCESS')
                     this.files = response.data?.files
@@ -124,38 +146,38 @@
                     )
                 })
             },
-            confirmDeleteFile(file) {
-                alertify.confirm(
-                    'Delete',
-                    `Are you sure you want to delete ${file}?`,
-                    () => {
-                        this.deleteFile(file)
-                    },
-                    () => {
-                        alertify.error('Canceled')
-                    }
-                )
-            },
-            deleteFile(file) {
-                axios.post('/knowledge-base/delete', { file_name: file})
-                .then(response => {
-                    this.files = response.data?.files
-                })
-                .catch(error => {
-                    console.log(error)
-                })
-            },
-            getKnowledgeBase() {
-                axios.post('/knowledge-base')
-                .then(response => {
-                    this.files = response.data?.files
-                })
-                .catch(error => {
-                    console.log(error)
-                })
-            },
+            // confirmDeleteFile(file) {
+            //     alertify.confirm(
+            //         'Delete',
+            //         `Are you sure you want to delete ${file}?`,
+            //         () => {
+            //             this.deleteFile(file)
+            //         },
+            //         () => {
+            //             alertify.error('Canceled')
+            //         }
+            //     )
+            // },
+            // deleteFile(file) {
+            //     axios.post('/api/knowledge-base/delete', { file_name: file})
+            //     .then(response => {
+            //         this.files = response.data?.files
+            //     })
+            //     .catch(error => {
+            //         console.log(error)
+            //     })
+            // },
+            // getKnowledgeBase() {
+            //     axios.get('/api/knowledge-base')
+            //     .then(response => {
+            //         this.files = response.data?.files
+            //     })
+            //     .catch(error => {
+            //         console.log(error)
+            //     })
+            // },
             getAnswers() {
-                axios.post('/answer')
+                axios.post('/api/answer')
                 .then(response => {
                     this.answers = response.data?.answers
                 })
@@ -180,7 +202,7 @@
                 )
             },
             deleteItem(id) {
-                axios.post('/answer/delete', { answer_id: id })
+                axios.post('/api/answer/delete', { answer_id: id })
                 .then(response => {
                     this.answers = response.data?.answers
                     alertify.success('SUCCESS')
@@ -194,7 +216,7 @@
         },
         mounted() {
             this.getAnswers()
-            this.getKnowledgeBase()
+            // this.getKnowledgeBase()
         }
     }
 </script>

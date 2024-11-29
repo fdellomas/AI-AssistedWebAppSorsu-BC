@@ -45,8 +45,16 @@
                     </div>
                 </form>
             </section>
-            <article v-for="(item, index) in posts" :key="index" class="w-80 md:w-[600px] rounded-lg shadow-xl p-10 border border-gray-400">
+            <article v-for="(item, index) in posts" :key="index" class="w-80 md:w-[600px] rounded-lg shadow-xl py-5 px-10 border border-gray-400">
                 <header class="mb-5 text-blue-400">
+                    <div v-if="this.role=='admin'" class="w-full flex justify-end items-center gap-2">
+                        <router-link :to="`/post/edit/${item.id}`" class="block p-1 rounded text-white bg-indigo-400 hover:bg-indigo-600 flex justify-center items-center">
+                            <v-icon scale="0.7" name="fa-pencil-alt" />
+                        </router-link>
+                        <router-link :to="`/`" class="block p-1 rounded text-white bg-rose-400 hover:bg-rose-600 flex justify-center items-center">
+                            <v-icon scale="0.7" name="fa-trash" />
+                        </router-link>
+                    </div>
                     <h1 class="text-xl font-bold">{{ item.title }}</h1>
                     <p class="">{{ formatDateTo12Hour(item.created_at) }}</p>
                 </header>
@@ -92,7 +100,7 @@
                 for (let i = 0; i < this.attachments.length; i++) {
                     fd.append(`images[]`, this.attachments[i]); 
                 }
-                await axios.post('/post/store', fd, {
+                await axios.post('/api/post/store', fd, {
                     headers: { 'Content-Type': 'multipart/form-data' },
                 })
                 .then(response => {
@@ -112,7 +120,7 @@
                 this.role = store.user.role
             },
             async getPosts() {
-                await axios.post('/post')
+                await axios.get('/api/post')
                 .then(response => {
                     console.log(response)
                     const p = response.data?.post

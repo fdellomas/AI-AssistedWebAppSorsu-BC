@@ -15,6 +15,32 @@ class AnswerSheetController extends Controller
         return response()->json(['answers' => $answers]);
     }
 
+    public function show(AnswerSheet $answer)
+    {
+        return response()->json([
+            'message' => 'OK',
+            'answer' => $answer
+        ], 200);
+    }
+
+    public function update(AnswerSheet $answer, Request $request)
+    {
+        $validated = $request->validate([
+            'category' => 'required',
+            'answer' => 'required',
+            'possible_questions' => 'required|array',
+        ]);
+        $result = $answer->update($validated);
+        if (!$result) {
+            return response()->json([
+                'message' => 'Failed to update knowledge base',
+            ], 400);
+        }
+        return response()->json([
+            'message' => 'OK',
+        ], 200);
+    }
+
     public function store(StoreRequest $request)
     {
         $validated = $request->validated();
@@ -40,5 +66,46 @@ class AnswerSheetController extends Controller
         return response()->json([
             'answers' => $answers
         ]);
+    }
+
+    public function archive()
+    {
+        $archive = AnswerSheet::onlyTrashed()->get();
+        return response()->json([
+            'message' => 'OK',
+            'archive' => $archive,
+        ], 200);
+    }
+
+    public function restore($id)
+    {
+        $answer = AnswerSheet::withTrashed()->findOrFail($id);
+        $result = $answer->restore();
+        if (!$result) {
+            return response()->json([
+                'message' => 'Failed to restore'
+            ], 400);
+        }
+        $archive = AnswerSheet::onlyTrashed()->get();
+        return response()->json([
+            'message' => 'OK',
+            'archive' => $archive,
+        ], 200);
+    }
+
+    public function destroy($id)
+    {
+        $answer = AnswerSheet::withTrashed()->findOrFail($id);
+        $result = $answer->forceDelete();
+        if (!$result) {
+            return response()->json([
+                'message' => 'Failed to permanently delete',
+            ], 400);
+        }
+        $archive = AnswerSheet::onlyTrashed()->get();
+        return response()->json([
+            'message' => 'OK',
+            'archive' => $archive,
+        ], 200);
     }
 }

@@ -30,29 +30,34 @@ class KnowledgeBaseController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'file' => 'required|file'
+        $validated = $request->validate([
+            'file' => 'required'
         ]);
-
-        $file = $request->file('file');
-        $folder = 'public/knowledge-base';
-        $fileName = $file->getClientOriginalName();
-
-        if (Storage::exists($folder . '/' . $fileName)) {
-            return response()->json([
-                'message' => 'File already exists'
-            ], 409);
-        }
-
-        $path = $file->storeAs($folder, $fileName);
-        $files = [];
-        $knowledge_base = Storage::files($folder);
-        foreach ($knowledge_base as $kb) {
-            $files[] = basename($kb);
-        }
         return response()->json([
-            'files' => $files
-        ]);
+            'file' => $validated['file']
+        ], 200);
+
+        $files_arr = $request->input('file');
+        $folder = 'public/knowledge-base';
+        foreach ($files_arr as $file_p) {
+            $fileName = $file_p->getClientOriginalName();
+
+            if (Storage::exists($folder . '/' . $fileName)) {
+                return response()->json([
+                    'message' => 'File already exists'
+                ], 409);
+            }
+
+            $path = $file_p->storeAs($folder, $fileName);
+        }
+        // $files = [];
+        // $knowledge_base = Storage::files($folder);
+        // foreach ($knowledge_base as $kb) {
+        //     $files[] = basename($kb);
+        // }
+        return response()->json([
+            'message' => 'OK'
+        ], 200);
     }
 
     public function delete(Request $request)

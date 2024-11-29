@@ -77,7 +77,7 @@
             },
             submitQuestion() {
                 const store = useAuthStore()
-                axios.post('/query', {
+                axios.post('/api/query', {
                     user_id: store?.user?.id,
                     question: this.question
                 })
@@ -98,7 +98,7 @@
             },
             getQueryLog() {
                 const store = useAuthStore()
-                axios.post('/queries', { user_id: store.user?.id })
+                axios.post('/api/queries', { user_id: store.user?.id })
                 .then(response => {
                     const qlg = response.data?.query_log
                     this.logTransfer(qlg)
@@ -115,7 +115,7 @@
                 const container = this.$refs.chatContainer
                 const scrollHeightBefore = container.scrollHeight
                 const store = useAuthStore()
-                axios.post('/queries/old', {
+                axios.post('/api/queries/old', {
                     user_id: store.user.id,
                     last_query_id: this.logs[0].id
                 })

@@ -6,11 +6,11 @@
                     <v-icon name="fa-arrow-left" />
                 </router-link>
                 <div class="">
-                    <h1 class="text-2xl font-bold">Create</h1>
-                    <p class="text-sm">Add new knowledge to your AI</p>
+                    <h1 class="text-2xl font-bold">View</h1>
+                    <p class="text-sm">View your knowledge base</p>
                 </div>
             </header>
-            <form class="w-full p-5" @submit.prevent="handleSubmit">
+            <form class="w-full p-5">
                 <div class="flex items-center gap-2 w-full mb-2">
                     <div class="group w-full">
                         <label for="category" class="text-xs font-bold">Category:</label>
@@ -21,20 +21,9 @@
                             class="p-2 rounded border border-black w-full" 
                             placeholder="Category"
                             v-model="this.category"
-                            required
+                            readonly
                         />
                     </div>
-                    <!-- <div class="group w-full md:w-1/2">
-                        <label for="subcategory" class="text-xs font-bold">Sub Category:</label>
-                        <input 
-                            type="text" 
-                            name="subcategory" 
-                            id="subcategory" 
-                            class="p-2 rounded border border-black w-full" 
-                            placeholder="Sub Category"
-                            v-model="this.sub_category"
-                        />
-                    </div> -->
                 </div>
                 <div class="w-full space-y-2 mb-2">
                     <div class="w-full group">
@@ -45,7 +34,7 @@
                             rows="3" 
                             class="w-full p-2 rounded border border-black resize-none"
                             v-model="this.answer"
-                            required
+                            readonly
                         >
                     
                         </textarea>
@@ -60,17 +49,10 @@
                             :id="`questtion-${index}`"
                             v-model="possible_questions[index]" 
                             class="w-full p-2 rounded border border-black" 
-                            required
+                            readonly
                         />
-                        <button v-if="index == 0" @click="addQuestion" type="button" class="p-2 text-white bg-green-400 hover:bg-green-600 rounded">
-                            <v-icon name="fa-plus-square" />
-                        </button>
-                        <button v-else @click="deleteQuestion(index)" type="button" class="p-2 text-white bg-red-400 hover:bg-red-600 rounded">
-                            <v-icon name="fa-trash" />
-                        </button>
                     </div>
                 </div>
-                <button class="submit w-full md:w-1/3 p-2 rounded bg-blue-400 hover:bg-blue-600 text-white font-bold">submit</button>
             </form>
         </section>
     </div>
@@ -78,6 +60,9 @@
 
 <script>
     import axios from 'axios';
+    import alertify from 'alertifyjs';
+    import 'alertifyjs/build/css/alertify.css';
+    import 'alertifyjs/build/css/themes/default.css';
 
     export default {
         data() {
@@ -89,33 +74,51 @@
             }
         },
         methods: {
-            handleSubmit() {
-                axios.post('/answer/store', {
-                    category: this.category,
-                    sub_category: this.sub_category,
-                    answer: this.answer,
-                    possible_questions: this.possible_questions,
-                })
+            async getKnowledgeBase() {
+                const id = this.$route.params.answer_id
+                await axios.get(`/api/answer/show/${id}`)
                 .then(response => {
-                    this.category = ''
-                    this.sub_category = ''
-                    this.answer = ''
-                    this.possible_questions = ['']
+                    console.log(response)
+                    const ans = response.data?.answer
+                    this.category = ans?.category
+                    this.answer = ans?.answer
+                    this.possible_questions = ans?.possible_questions
                 })
                 .catch(error => {
                     console.log(error)
                 })
             },
-            addQuestion() {
-                let temp = this.possible_questions
-                temp.push('')
-                this.possible_questions = temp
-            },
-            deleteQuestion(index) {
-                let temp = this.possible_questions
-                temp.splice(index, 1)
-                this.possible_questions = temp
-            }
-        }
+            // async handleSubmit() {
+            //     const id = this.$route.params.answer_id
+            //     await axios.patch(`/api/answer/update/${id}`, {
+            //         category: this.category,
+            //         answer: this.answer,
+            //         possible_questions: this.possible_questions,
+            //     })
+            //     .then(() => {
+            //         alertify.success('UPDATED')
+            //     })
+            //     .catch(error => {
+            //         console.log(error)
+            //         alertify.alert(
+            //             'Update Error',
+            //             error.response?.data?.message
+            //         )
+            //     })
+            // },
+            // addQuestion() {
+            //     let temp = this.possible_questions
+            //     temp.push('')
+            //     this.possible_questions = temp
+            // },
+            // deleteQuestion(index) {
+            //     let temp = this.possible_questions
+            //     temp.splice(index, 1)
+            //     this.possible_questions = temp
+            // }
+        },
+        mounted() {
+            this.getKnowledgeBase()
+        },
     }
 </script>

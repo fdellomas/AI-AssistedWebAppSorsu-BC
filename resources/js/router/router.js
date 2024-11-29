@@ -3,11 +3,16 @@ import { authMiddleware } from "../middlewares/auth";
 import SignIn from "../pages/auth/SignIn.vue";
 import SignUp from "../pages/auth/SignUp.vue";
 import Home from "../pages/Home.vue";
+import EditPost from "../pages/posts/Edit.vue";
 import PageNotFound from "../pages/PageNotFound.vue";
 import Query from "../pages/Query.vue";
 import KnowledgeBase from "../pages/knowledge_base/KnowledgeBase.vue";
 import CreateKB from "../pages/knowledge_base/Create.vue";
+import EditKB from "../pages/knowledge_base/Edit.vue";
+import ViewKB from "../pages/knowledge_base/View.vue";
+import ArchiveKB from "../pages/knowledge_base/Archive.vue";
 import Profile from "../pages/Profile.vue";
+import Account from "../pages/Account.vue";
 
 const routes = [
     {
@@ -34,6 +39,12 @@ const routes = [
         meta: { Layout: true, requiresAuth: true }
     },
     {
+        name: 'edit-post',
+        path: '/post/edit/:post_id',
+        component: EditPost,
+        meta: { Layout: true, requiresAuth: true }
+    },
+    {
         name: 'queries',
         path: '/queries',
         component: Query,
@@ -52,9 +63,33 @@ const routes = [
         meta: { Layout: true, requiresAuth: true }
     },
     {
+        name: 'edit-knowledge-base',
+        path: '/knowledge-base/edit/:answer_id',
+        component: EditKB,
+        meta: { Layout: true, requiresAuth: true }
+    },
+    {
+        name: 'view-knowledge-base',
+        path: '/knowledge-base/view/:answer_id',
+        component: ViewKB,
+        meta: { Layout: true, requiresAuth: true }
+    },
+    {
+        name: 'archive-knowledge-base',
+        path: '/knowledge-base/archive',
+        component: ArchiveKB,
+        meta: { Layout: true, requiresAuth: true }
+    },
+    {
         name: 'profile',
         path: '/profile',
         component: Profile,
+        meta: { Layout: true, requiresAuth: true }
+    },
+    {
+        name: 'account',
+        path: '/account',
+        component: Account,
         meta: { Layout: true, requiresAuth: true }
     },
 ];

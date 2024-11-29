@@ -57,7 +57,7 @@
         methods: {
             handleSubmit() {
                 const store = useAuthStore()
-                axios.post('/user/login', {
+                axios.post('/api/user/login', {
                     email: this.email,
                     password: this.password,
                 })
