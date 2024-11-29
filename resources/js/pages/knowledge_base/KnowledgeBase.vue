@@ -1,5 +1,5 @@
 <template>
-    <div class="w-full min-h-screen p-10 space-y-5">
+    <div class="w-full min-h-screen p-3 md:p-10 pt-20 space-y-5">
         <section class="w-full p-5 rounded-lg shadow-xl border border-gray-400 flex justify-between items-center" v-if="notice">
             <p class="text-xs">
                 <span class="text-amber-400 font-bold">Please note:</span>
@@ -9,12 +9,12 @@
                 <v-icon name="bi-x" />
             </button>
         </section>
-        <section class="w-full p-10 rounded-lg shadow-xl border border-gray-400">
+        <section class="w-full p-3 md:p-10 rounded-lg shadow-xl border border-gray-400">
             <form enctype="multipart/form-data">
                 <header class="mb-5 flex items-center justify-between">
-                    <h1 class="text-2xl font-bold">Knowledge Base</h1>
-                    <label for="file-upload" class="p-2 text-sm bg-blue-400 hover:bg-blue-600 text-white font-bold rounded cursor-pointer">Upload</label>
-                    <input @change="handleUpload" type="file" name="file-upload" id="file-upload" class="hidden">
+                    <h1 class="md:text-2xl font-bold">Knowledge Base</h1>
+                    <label for="file-upload" class="p-2 text-xs md:text-sm bg-blue-400 hover:bg-blue-600 text-white font-bold rounded cursor-pointer">Upload</label>
+                    <input accept=".docx" @change="handleUpload" type="file" name="file-upload" id="file-upload" class="hidden">
                 </header>
             </form>
             <div class="relative h-80 2xl:h-96 overflow-y-auto">
@@ -96,46 +96,37 @@
                 answers: [],
                 files: [],
                 notice: true,
+                selectedFile: null,
+                disableSubmit: true,
             }
         },
         methods: {
-            // handleUpload(event) {
-            //     alertify.confirm(
-            //         'Upload Confirmation',
-            //         'Continue upload?',
-            //         () => {
-            //             const file = event.target.files[0]
-            //             this.uploadFile(file)
-            //         },
-            //         () => {
-            //             alertify.error('Canceled')
-            //         }
-            //     )
-            // },
             handleUpload(event) {
-                const fileses = event.target.files; // Get selected files
-                if (fileses.length > 0) {
-                    // Example: Upload files via an API
-                    const formData = new FormData();
-                    Array.from(fileses).forEach(file => formData.append('file[]', file));
-
-                    // Make an API request (Axios example)
-                    axios.post('/api/knowledge-base/store', { file: fileses })
-                    .then(response => {
-                        console.log('Upload successful:', response.data);
-                    })
-                    .catch(error => {
-                        console.error('Upload failed:', error);
-                    });
-                }
+                alertify.confirm(
+                    'Upload Confirmation',
+                    'Continue upload?',
+                    () => {
+                        const file = event.target.files[0]
+                        this.uploadFile(file)
+                    },
+                    () => {
+                        alertify.error('Canceled')
+                    }
+                )
             },
-            async uploadFile(file) {
-                // const formData = new FormData()
-                // formData.append('file', file)
-                await axios.post('/api/knowledge-base/store', { file: file })
+            async uploadFile(file) 
+            {
+                const formData = new FormData()
+                formData.append('knowledgeBaseFile', file)
+                await axios.post('/api/knowledge-base/store', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                })
                 .then(response => {
                     alertify.success('SUCCESS')
                     this.files = response.data?.files
+                    console.log(response)
                 })
                 .catch(error => {
                     console.log(error)
@@ -144,6 +135,10 @@
                         'Error',
                         error?.response?.data?.message
                     )
+                })
+                .finally(() => {
+                    this.disableSubmit = true
+                    this.selectedFile = null
                 })
             },
             // confirmDeleteFile(file) {
@@ -167,15 +162,15 @@
             //         console.log(error)
             //     })
             // },
-            // getKnowledgeBase() {
-            //     axios.get('/api/knowledge-base')
-            //     .then(response => {
-            //         this.files = response.data?.files
-            //     })
-            //     .catch(error => {
-            //         console.log(error)
-            //     })
-            // },
+            getKnowledgeBase() {
+                axios.get('/api/knowledge-base')
+                .then(response => {
+                    this.files = response.data?.files
+                })
+                .catch(error => {
+                    console.log(error)
+                })
+            },
             getAnswers() {
                 axios.post('/api/answer')
                 .then(response => {
@@ -215,8 +210,8 @@
             },
         },
         mounted() {
-            this.getAnswers()
-            // this.getKnowledgeBase()
+            // this.getAnswers()
+            this.getKnowledgeBase()
         }
     }
 </script>

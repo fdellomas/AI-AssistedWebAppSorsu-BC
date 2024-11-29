@@ -14,7 +14,7 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 Route::prefix('query')->controller(QueryController::class)->group(function() {
-    Route::post('/', 'query');
+    Route::post('/', 'askQuestion');
 });
 
 Route::get('/test', function() {

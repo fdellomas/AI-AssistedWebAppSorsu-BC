@@ -6,7 +6,7 @@
                     <p class="text-sm"><span class="font-bold">You:</span> <span>{{ log?.question }}</span></p>
                 </div>
                 <div class="w-80 md:w-3/5 self-start rounded-lg bg-gray-400/20 border border-gray-400 p-5">
-                    <p class="text-sm">{{ log.answer.visibleAnswer }}</p>
+                    <p v-html="log.answer.visibleAnswer" class="text-sm"></p>
                 </div>
             </div>
         </section>
@@ -36,6 +36,19 @@
             }
         },
         methods: {
+            formatResponse(responseText) {
+                let formattedText = responseText.replace(/(###\s)([A-Za-z ]+)/g, '<strong>$2:</strong><br>');
+
+                formattedText = formattedText.replace(/(?:^|\n)([\*\-])\s/g, '<br>&bull; ');
+
+                formattedText = formattedText.replace(/(?:^|\n)(\d+\.)\s/g, '<br>$1 ');
+
+                formattedText = formattedText.replace(/\n/g, '<br>');
+
+                formattedText = formattedText.replace(/(<br>)+/g, '<br>');
+
+                return formattedText;
+            },
             typeText(fullText) {
                 let index = 0;
                 const currentLogIndex = this.logs.length - 1; 
@@ -47,7 +60,7 @@
                     } else {
                         clearInterval(interval);
                     }
-                }, 100);
+                }, 40);
             },
             showAnswerEffect(qlg) {
                 const newLog = {
@@ -58,8 +71,9 @@
                         visibleAnswer: '',
                     }
                 }
+                newLog.answer.full = this.formatResponse(qlg.answer)
                 this.logs = [...this.logs, newLog]
-                this.typeText(qlg.answer)
+                this.typeText(newLog.answer.full)
             },
             logTransfer(queries) {
                 let newLogs = []
@@ -69,7 +83,7 @@
                         question: element.question,
                         answer: {
                             full: element.answer,
-                            visibleAnswer: element.answer
+                            visibleAnswer: this.formatResponse(element.answer)
                         }
                     }) 
                 });

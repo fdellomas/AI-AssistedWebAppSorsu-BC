@@ -31,32 +31,35 @@ class KnowledgeBaseController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'file' => 'required'
+            'knowledgeBaseFile' => 'required'
         ]);
-        return response()->json([
-            'file' => $validated['file']
-        ], 200);
-
-        $files_arr = $request->input('file');
         $folder = 'public/knowledge-base';
-        foreach ($files_arr as $file_p) {
-            $fileName = $file_p->getClientOriginalName();
-
-            if (Storage::exists($folder . '/' . $fileName)) {
-                return response()->json([
-                    'message' => 'File already exists'
-                ], 409);
-            }
-
-            $path = $file_p->storeAs($folder, $fileName);
+        $fileName = $validated['knowledgeBaseFile']->getClientOriginalName();
+        if (Storage::exists($folder.'/'.$fileName)) {
+            return response()->json([
+                'message' => 'File already exists'
+            ], 409);
         }
-        // $files = [];
-        // $knowledge_base = Storage::files($folder);
-        // foreach ($knowledge_base as $kb) {
-        //     $files[] = basename($kb);
+        $path = $validated['knowledgeBaseFile']->storeAs($folder, $fileName);
+        // foreach ($files_arr as $file_p) {
+        //     $fileName = $file_p->getClientOriginalName();
+
+        //     if (Storage::exists($folder . '/' . $fileName)) {
+        //         return response()->json([
+        //             'message' => 'File already exists'
+        //         ], 409);
+        //     }
+
+        //     $path = $file_p->storeAs($folder, $fileName);
         // }
+        $files = [];
+        $knowledge_base = Storage::files($folder);
+        foreach ($knowledge_base as $kb) {
+            $files[] = basename($kb);
+        }
         return response()->json([
-            'message' => 'OK'
+            'message' => 'OK',
+            'files' => $files
         ], 200);
     }
 
