@@ -50,7 +50,10 @@ Route::prefix('queries')->controller(QueryLogController::class)->group(function(
 Route::prefix('knowledge-base')->controller(KnowledgeBaseController::class)->group(function() {
     Route::get('/', 'index');
     Route::post('/store', 'store');
-    // Route::post('/delete', 'delete');
+    Route::post('/archive', 'archive');
+    Route::get('/trashbin', 'trashbin');
+    Route::post('/delete', 'delete');
+    Route::post('/restore', 'restore');
     // Route::post('/test', 'test');
 });
 

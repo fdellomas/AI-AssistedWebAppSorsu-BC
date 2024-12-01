@@ -13,8 +13,11 @@
             <form enctype="multipart/form-data">
                 <header class="mb-5 flex items-center justify-between">
                     <h1 class="md:text-2xl font-bold">Knowledge Base</h1>
-                    <label for="file-upload" class="p-2 text-xs md:text-sm bg-blue-400 hover:bg-blue-600 text-white font-bold rounded cursor-pointer">Upload</label>
-                    <input accept=".docx" @change="handleUpload" type="file" name="file-upload" id="file-upload" class="hidden">
+                    <div class="flex justify-center items-center gap-2">
+                        <router-link to="/knowledge-base/archive" class="p-2 text-xs md:text-sm bg-rose-400 hover:bg-rose-600 text-white font-bold rounded">Archive</router-link>
+                        <label for="file-upload" class="p-2 text-xs md:text-sm bg-blue-400 hover:bg-blue-600 text-white font-bold rounded cursor-pointer">Upload</label>
+                        <input accept=".docx" @change="handleUpload" type="file" name="file-upload" id="file-upload" class="hidden">
+                    </div>
                 </header>
             </form>
             <div class="relative h-80 2xl:h-96 overflow-y-auto">
@@ -30,8 +33,8 @@
                             <td class="p-2 border-b border-gray-400 font-bold">{{ file }}</td>
                             <td class="p-2 border-b border-gray-400">
                                 <div class="w-full flex flex-wrap justify-center items-center gap-2">
-                                    <button @click="confirmDeleteFile(file)" class="p-2 text-xs text-white font-bold bg-red-400 hover:bg-red-600 rounded">
-                                        <v-icon name="fa-trash" />
+                                    <button @click="confirmArchive(file)" class="p-2 text-xs text-yellow-300 hover:text-yellow-600 font-bold bg-gray-500 hover:bg-gray-700 rounded-full">
+                                        <v-icon name="fa-archive" />
                                     </button>
                                 </div>
                             </td>
@@ -162,6 +165,29 @@
             //         console.log(error)
             //     })
             // },
+            confirmArchive(file) {
+                alertify.confirm(
+                    'Archive Confirmation',
+                    'Do you want to move file to archive?',
+                    () => {
+                        this.archiveFile(file)
+                    },
+                    () => {
+                        alertify.message('Canceled')
+                    }
+                )
+            },
+            archiveFile(file) {
+                axios.post('/api/knowledge-base/archive', { file_name: file })
+                .then(response => {
+                    this.files = response.data?.files
+                })
+                .catch(error => {
+                    console.log(error)
+                    alertify.error('Error')
+                    alertify.alert('Error', error.response?.data?.message)
+                })
+            },
             getKnowledgeBase() {
                 axios.get('/api/knowledge-base')
                 .then(response => {

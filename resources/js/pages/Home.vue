@@ -51,9 +51,9 @@
                         <router-link :to="`/post/edit/${item.id}`" class="block p-1 rounded text-white bg-indigo-400 hover:bg-indigo-600 flex justify-center items-center">
                             <v-icon scale="0.7" name="fa-pencil-alt" />
                         </router-link>
-                        <router-link :to="`/`" class="block p-1 rounded text-white bg-rose-400 hover:bg-rose-600 flex justify-center items-center">
+                        <!-- <router-link :to="`/`" class="block p-1 rounded text-white bg-rose-400 hover:bg-rose-600 flex justify-center items-center">
                             <v-icon scale="0.7" name="fa-trash" />
-                        </router-link>
+                        </router-link> -->
                     </div>
                     <h1 class="text-xl font-bold">{{ item.title }}</h1>
                     <p class="">{{ formatDateTo12Hour(item.created_at) }}</p>

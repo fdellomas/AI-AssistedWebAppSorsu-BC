@@ -189,7 +189,7 @@ class QueryController extends Controller
         $apiKey = env('OPENAI_API_KEY'); // Make sure your API key is set in the .env file
         $client = new Client();
 
-        $systemPrompt = "You are an assistant that uses the following references to answer questions accurately.";
+        $systemPrompt = "You are an assistant that uses the following references to answer questions accurately. The institution this references came from is Sorsogon State University, this university is in the Philippines.";
         $referenceText = '';
 
         // Concatenate all references into a single string

@@ -9,7 +9,7 @@ class PostController extends Controller
 {
     public function index()
     {
-        $posts = Post::orderByDesc('created_at')
+        $posts = Post::orderByDesc('updated_at')
             ->get();
         
         return response()->json([
@@ -36,17 +36,6 @@ class PostController extends Controller
             'attachments.*' => 'nullable',
         ]);
         $post->update($validated);
-        // if ($request->has('images')) {
-        //     foreach ($request->input('images') as $image) {
-        //         $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-        //         $path = 'posts/' . $filename;
-        //         $image->storeAs('/public/posts', $filename);
-        //         $imgPaths[] = $path;
-        //     }
-        //     $post->update([
-        //         'attachments' => $imgPaths
-        //     ]);
-        // }
         if (count($validated['images'])>0) {
             $imgPaths = [];
             foreach ($request->input('images') as $base64Image) {
@@ -112,7 +101,8 @@ class PostController extends Controller
 
     public function delete($id)
     {
-        $post = Post::withTrashed()->findOrFail($id);
+        // $post = Post::withTrashed()->findOrFail($id);
+        $post = Post::findOrFail($id);
         $result = $post->delete();
         if (!$result) {
             return response()->json([

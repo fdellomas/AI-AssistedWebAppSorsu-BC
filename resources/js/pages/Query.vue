@@ -1,18 +1,19 @@
 <template>
-    <div class="w-full min-h-screen pt-20">
-        <section class="w-full h-96 p-10 overflow-y-auto scroll-smooth space-y-5" ref="chatContainer" @scroll="onScroll">
+    <div class="w-full min-h-screen pt-20 md:pt-5 relative">
+        <Loading v-if="loading" />
+        <section class="w-full h-96 md:h-[490px] 2xl:h-[580px] p-3 overflow-y-auto scroll-smooth space-y-5" ref="chatContainer" @scroll="onScroll">
             <div v-for="(log, index) in logs" :key="index" class="w-full p-3 flex flex-col gap-5">
-                <div class="w-80 md:w-3/5 self-end rounded-lg bg-blue-400/20 border border-blue-400 p-5">
+                <div class="w-full md:w-3/5 self-end rounded-lg bg-blue-400/20 border border-blue-400 p-5">
                     <p class="text-sm"><span class="font-bold">You:</span> <span>{{ log?.question }}</span></p>
                 </div>
-                <div class="w-80 md:w-3/5 self-start rounded-lg bg-gray-400/20 border border-gray-400 p-5">
+                <div class="w-full md:w-3/5 self-start rounded-lg bg-gray-400/20 border border-gray-400 p-5">
                     <p v-html="log.answer.visibleAnswer" class="text-sm"></p>
                 </div>
             </div>
         </section>
-        <section class="w-full sticky bottom-0">
+        <section class="w-full md:w-5/6 fixed bottom-0">
             <form @submit.prevent="submitQuestion">
-                <div class="flex gap-2 items-center p-10">
+                <div class="flex gap-2 items-center px-10 py-5 bg-white">
                     <input type="text" name="question" id="question" v-model="question" class="w-full p-2 rounded text-sm outline-none border border-slate-900" />
                     <button class="w-1/6 p-2 rounded text-white text-sm bg-blue-400 hover:bg-blue-600" type="submit" :disabled="disableBtn">
                         <v-icon name="fa-paper-plane" />
@@ -26,6 +27,10 @@
 <script>
     import axios from 'axios';
     import { useAuthStore } from '../stores/auth';
+    import alertify from 'alertifyjs';
+    import 'alertifyjs/build/css/alertify.css';
+    import 'alertifyjs/build/css/themes/default.css';
+    import Loading from '../components/Loading.vue';
 
     export default {
         data() {
@@ -33,6 +38,7 @@
                 question: '',
                 disableBtn: false,
                 logs: [],
+                loading: false,
             }
         },
         methods: {
@@ -90,6 +96,7 @@
                 this.logs = newLogs
             },
             submitQuestion() {
+                this.loading = true
                 const store = useAuthStore()
                 axios.post('/api/query', {
                     user_id: store?.user?.id,
@@ -108,6 +115,10 @@
                 })
                 .catch(error => {
                     console.log(error)
+                    alertify.alert('Error', error.response?.data?.message)
+                })
+                .finally(() => {
+                    this.loading = false
                 })
             },
             getQueryLog() {
@@ -169,6 +180,9 @@
                     this.scrollToBottom()
                 }, 600)
             })
+        },
+        components: {
+            Loading
         }
     }
 </script>
