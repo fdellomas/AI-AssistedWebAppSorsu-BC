@@ -10,7 +10,7 @@ import KnowledgeBase from "../pages/knowledge_base/KnowledgeBase.vue";
 import CreateKB from "../pages/knowledge_base/Create.vue";
 import EditKB from "../pages/knowledge_base/Edit.vue";
 import ViewKB from "../pages/knowledge_base/View.vue";
-import ArchiveKB from "../pages/knowledge_base/Archive.vue";
+import ArchiveKB from "../pages/knowledge_base/TrashBin.vue";
 import Profile from "../pages/Profile.vue";
 import Account from "../pages/Account.vue";
 

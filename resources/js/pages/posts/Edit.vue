@@ -40,6 +40,11 @@
             </section>
             <article class="w-full md:w-[600px] rounded-lg shadow-xl py-5 px-10 border border-gray-400">
                 <header class="mb-5 text-blue-400">
+                    <div class="flex justify-end items-center w-full">
+                        <button @click="confirmDelete(post.id)" class="p-1 rounded text-white bg-rose-400 hover:bg-rose-600 flex justify-center items-center">
+                            <v-icon name="fa-trash" scale="0.7" />
+                        </button>
+                    </div>
                     <h1 class="text-xl font-bold">{{ post.title }}</h1>
                     <p class="">{{ formatDateTo12Hour(post.created_at) }}</p>
                 </header>
@@ -82,6 +87,7 @@
         data() {
             return {
                 post: {
+                    id: null,
                     title: '',
                     message: '',
                     attachments: [],
@@ -170,6 +176,27 @@
                     reader.onerror = (error) => reject(error)
                 })
             },
+            confirmDelete(id) {
+                alertify.confirm(
+                    'Delete Confirmation',
+                    'Do you want to permanently delete this post?',
+                    () => {
+                        this.deletePost(id)
+                    },
+                    () => {
+                        alertify.error('Canceled')
+                    }
+                )
+            },
+            deletePost(id) {
+                axios.delete(`/api/post/delete/${id}`)
+                .then(() => {
+                    this.$router.push('/')
+                })
+                .catch(error => {
+                    console.log(error)
+                })
+            }
         },
         mounted() {
             this.getPost()

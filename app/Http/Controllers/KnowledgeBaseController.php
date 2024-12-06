@@ -63,16 +63,78 @@ class KnowledgeBaseController extends Controller
         ], 200);
     }
 
+    public function trashbin()
+    {
+        $source_path = 'public/archive';
+        $files = [];
+        $archive = Storage::files($source_path);
+        foreach ($archive as $arc) {
+            $files[] = basename($arc);
+        }
+        return response()->json([
+            'message' => 'OK',
+            'files' => $files
+        ], 200);
+    }
+
+    public function archive(Request $request)
+    {
+        $request->validate([
+            'file_name' => 'required'
+        ]);
+        $source_path = 'public/knowledge-base';
+        $destination_path = 'public/archive';
+        if (Storage::exists($source_path . '/' . $request->file_name)) {
+            Storage::move($source_path.'/'.$request->file_name, $destination_path.'/'.$request->file_name);
+            $files = [];
+            $knowledge_base = Storage::files($source_path);
+            foreach ($knowledge_base as $kb) {
+                $files[] = basename($kb);
+            }
+            return response()->json([
+                'files' => $files
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'File does not exist'
+        ], 500);
+    }
+
     public function delete(Request $request)
     {
         $request->validate([
             'file_name' => 'required'
         ]);
-        $file_path = 'public/knowledge-base';
+        $file_path = 'public/archive';
         if (Storage::exists($file_path . '/' . $request->file_name)) {
             Storage::delete($file_path . '/' . $request->file_name);
             $files = [];
             $knowledge_base = Storage::files($file_path);
+            foreach ($knowledge_base as $kb) {
+                $files[] = basename($kb);
+            }
+            return response()->json([
+                'files' => $files
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'File does not exist'
+        ], 500);
+    }
+
+    public function restore(Request $request)
+    {
+        $request->validate([
+            'file_name' => 'required'
+        ]);
+        $source_path = 'public/archive';
+        $destination_path = 'public/knowledge-base';
+        if (Storage::exists($source_path . '/' . $request->file_name)) {
+            Storage::move($source_path.'/'.$request->file_name, $destination_path.'/'.$request->file_name);
+            $files = [];
+            $knowledge_base = Storage::files($source_path);
             foreach ($knowledge_base as $kb) {
                 $files[] = basename($kb);
             }
