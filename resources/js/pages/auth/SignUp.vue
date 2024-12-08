@@ -11,7 +11,7 @@
         </section>
         <section class="w-full md:w-2/5 fixed top-0 right-0 p-5">
             <h1 class="text-2xl font-bold mb-5">Sign Up</h1>
-            <form @submit.prevent="handleSubmit">
+            <form @submit.prevent="validate">
                 <div class="w-full flex flex-col items-center gap-5 text-sm">
                     <input 
                         type="text" 
@@ -49,7 +49,7 @@
                         v-model="this.extension"
                     />
                     <input 
-                        type="text" 
+                        type="email" 
                         name="email" 
                         id="email" 
                         class="w-full p-2 rounded ring-1 ring-gray-200" 
@@ -110,6 +110,23 @@
             Logo
         },
         methods: {
+            validate() {
+                let okSubmit = true;
+
+                const specialCharRegex = /[^a-zA-Z0-9]/;
+                if (!specialCharRegex.test(this.password) || this.password.length < 8) {
+                    alertify.alert('Password Validation', 'Password must be at least 8 characters long and must contain at least one special character')
+                    okSubmit = false
+                }
+                else if (this.password !== this.password_confirmation) {
+                    alertify.alert('Password Validation', 'Password Confirmation did not match')
+                    okSubmit = false
+                }
+
+                if (okSubmit) {
+                    this.handleSubmit()
+                }
+            },
             handleSubmit() {
                 const store = useAuthStore()
                 axios.post('/api/user/register', {

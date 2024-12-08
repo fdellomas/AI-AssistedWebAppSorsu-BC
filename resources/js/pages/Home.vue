@@ -3,7 +3,7 @@
         <section class="w-full flex justify-center items-center">
 
         </section>
-        <div class="w-full 2xl:h-[500px] flex flex-col justify-center items-center scroll-smooth pt-20 pb-10 gap-10">   
+        <div class="w-full flex flex-col justify-center items-center scroll-smooth pt-20 pb-10 gap-10">   
             <section class="w-80 md:w-[600px]" v-if="this.role == 'admin'">
                 <header class="text-blue-400 text-center">
                     <h1 class="text-2xl font-bold">Post Announcement</h1>

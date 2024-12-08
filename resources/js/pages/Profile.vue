@@ -191,7 +191,7 @@
             },
             updateAccount() {
                 const store = useAuthStore()
-                axios.post('/user/update-account', {
+                axios.post('/api/user/update-account', {
                     user_id: store.user.id,
                     email: this.email,
                     password: this.password,
@@ -215,7 +215,7 @@
             },
             updateUserProfile() {
                 const store = useAuthStore()
-                axios.post('/user/update', {
+                axios.post('/api/user/update', {
                     user_id: store.user.id,
                     first_name: this.first_name,
                     middle_name: this.middle_name,
